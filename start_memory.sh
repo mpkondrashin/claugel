@@ -2,8 +2,7 @@
 # ES Memory MCP Server
 # SQLite-based persistent memory
 
-# Измени путь на свой
-MCP_DIR="$HOME/Documents/Work/.claude-mcp"
+MCP_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 cd "$MCP_DIR"
 source .venv/bin/activate
