@@ -3,7 +3,6 @@ set -e
 
 REPO="https://github.com/mpkondrashin/claugel.git"
 DEFAULT_DIR="$HOME/.claude-mcp"
-CLAUDE_SETTINGS="$HOME/.claude/settings.json"
 
 echo "=== Claude MCP Installer ==="
 echo ""
@@ -56,41 +55,12 @@ else
     echo ".env already exists, skipping."
 fi
 
-# Register MCPs in ~/.claude/settings.json
+# Register MCPs in user scope (~/.claude/settings.json)
 echo ""
-echo "Registering MCP servers in ~/.claude/settings.json..."
-
-mkdir -p "$HOME/.claude"
-
-python3 - <<PYEOF
-import json, os
-
-settings_path = os.path.expanduser("$CLAUDE_SETTINGS")
-install_dir = "$INSTALL_DIR"
-
-# Load existing settings
-if os.path.exists(settings_path):
-    with open(settings_path) as f:
-        settings = json.load(f)
-else:
-    settings = {}
-
-settings.setdefault("mcpServers", {})
-settings["mcpServers"]["tm-proxy"] = {
-    "command": "/bin/bash",
-    "args": [f"{install_dir}/start_tm_proxy.sh"]
-}
-settings["mcpServers"]["es-memory"] = {
-    "command": "/bin/bash",
-    "args": [f"{install_dir}/start_memory.sh"]
-}
-
-with open(settings_path, "w") as f:
-    json.dump(settings, f, indent=2)
-
-print("  tm-proxy: registered")
-print("  es-memory: registered")
-PYEOF
+echo "Registering MCP servers..."
+claude mcp add --scope user tm-proxy /bin/bash "$INSTALL_DIR/start_tm_proxy.sh"
+claude mcp add --scope user es-memory /bin/bash "$INSTALL_DIR/start_memory.sh"
+echo "  Done."
 
 echo ""
 echo "=== Done! Restart Claude to activate MCP servers. ==="
