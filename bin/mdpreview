@@ -1,0 +1,88 @@
+#!/usr/bin/env python3
+"""
+mdpreview — open a Markdown file in the browser with GitHub-style formatting.
+Usage: mdpreview <file.md>
+"""
+
+import sys
+import os
+import tempfile
+import subprocess
+import json
+from pathlib import Path
+
+
+def main():
+    if len(sys.argv) < 2:
+        print("Usage: mdpreview <file.md>", file=sys.stderr)
+        sys.exit(1)
+
+    path = Path(sys.argv[1])
+    if not path.exists():
+        print(f"File not found: {path}", file=sys.stderr)
+        sys.exit(1)
+
+    content = path.read_text(encoding="utf-8")
+    title = path.name
+
+    # Embed raw markdown as a JS string (json.dumps handles escaping)
+    md_js = json.dumps(content)
+
+    html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title}</title>
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.5.1/github-markdown-light.min.css" />
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.0/marked.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <style>
+    body {{
+      box-sizing: border-box;
+      min-width: 200px;
+      max-width: 980px;
+      margin: 40px auto;
+      padding: 0 24px 60px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      background: #ffffff;
+    }}
+    .markdown-body pre {{
+      background: #f6f8fa;
+    }}
+  </style>
+</head>
+<body>
+  <article class="markdown-body" id="content"></article>
+  <script>
+    const md = {md_js};
+    marked.setOptions({{
+      highlight: (code, lang) => {{
+        if (lang && hljs.getLanguage(lang)) {{
+          return hljs.highlight(code, {{ language: lang }}).value;
+        }}
+        return hljs.highlightAuto(code).value;
+      }},
+      breaks: false,
+      gfm: true,
+    }});
+    document.getElementById("content").innerHTML = marked.parse(md);
+  </script>
+</body>
+</html>
+"""
+
+    tmp = tempfile.NamedTemporaryFile(
+        suffix=".html", prefix="mdpreview_", delete=False, mode="w", encoding="utf-8"
+    )
+    tmp.write(html)
+    tmp.close()
+
+    subprocess.run(["open", tmp.name])
+
+
+if __name__ == "__main__":
+    main()

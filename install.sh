@@ -62,5 +62,19 @@ claude mcp add --scope user tm-proxy /bin/bash "$INSTALL_DIR/start_tm_proxy.sh"
 claude mcp add --scope user es-memory /bin/bash "$INSTALL_DIR/start_memory.sh"
 echo "  Done."
 
+# Install CLI tools to ~/.local/bin
+echo ""
+echo "Installing CLI tools..."
+mkdir -p "$HOME/.local/bin"
+cp "$INSTALL_DIR/bin/mdpreview" "$HOME/.local/bin/mdpreview"
+chmod +x "$HOME/.local/bin/mdpreview"
+echo "  mdpreview -> ~/.local/bin/mdpreview"
+if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
+    echo ""
+    echo "  NOTE: ~/.local/bin is not in your PATH."
+    echo "  Add this to your ~/.zshrc or ~/.bashrc:"
+    echo '    export PATH="$HOME/.local/bin:$PATH"'
+fi
+
 echo ""
 echo "=== Done! Restart Claude to activate MCP servers. ==="

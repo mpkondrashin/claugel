@@ -409,6 +409,25 @@ Generate a complete, self-contained HTML page following TrendAI™ brand guideli
 
 ---
 
+## CLI tools
+
+Standalone command-line utilities installed to `~/.local/bin` by the installer.
+
+---
+
+##### `mdpreview`
+
+Open a Markdown file in the browser with GitHub-style formatting and syntax highlighting. No dependencies beyond Python 3 and an internet connection (loads marked.js and highlight.js from CDN).
+
+```bash
+mdpreview README.md
+mdpreview /path/to/any/file.md
+```
+
+The rendered page matches GitHub's Markdown style, with full GFM support (tables, fenced code blocks, task lists) and automatic syntax highlighting for code blocks.
+
+---
+
 ## Updates
 
 The `check_update.sh` script checks GitHub for a newer tagged release, updates the repo, reinstalls dependencies, and shows a macOS notification.
@@ -437,6 +456,8 @@ You can schedule it with `cron` or `launchd`.
 ├── requirements.txt    # Python dependencies (mcp, httpx)
 ├── skills/             # Claude Code custom slash commands
 │   └── trendai-page.md
+├── bin/                # CLI tools installed to ~/.local/bin
+│   └── mdpreview       # Markdown preview in browser
 ├── backups/            # compressed DB backups (memory_*.db.gz)
 ├── .env                # API tokens (git-ignored)
 ├── .env.example        # token template
