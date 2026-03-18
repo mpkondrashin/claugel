@@ -8,6 +8,7 @@ echo "=== Claude MCP Installer ==="
 echo ""
 
 # Install dir (override with CLAUGEL_DIR env var if needed)
+PROJECT_DIR="$(pwd)"
 INSTALL_DIR="${CLAUGEL_DIR:-$DEFAULT_DIR}"
 echo "Install directory: $INSTALL_DIR"
 
@@ -55,11 +56,11 @@ else
     echo ".env already exists, skipping."
 fi
 
-# Register MCPs for this project (.mcp.json in current directory)
+# Register MCPs for this project (.mcp.json in project root)
 echo ""
 echo "Registering MCP servers..."
-claude mcp add --scope project tm-proxy /bin/bash "$INSTALL_DIR/start_tm_proxy.sh"
-claude mcp add --scope project es-memory /bin/bash "$INSTALL_DIR/start_memory.sh"
+(cd "$PROJECT_DIR" && claude mcp add --scope project tm-proxy /bin/bash "$INSTALL_DIR/start_tm_proxy.sh")
+(cd "$PROJECT_DIR" && claude mcp add --scope project es-memory /bin/bash "$INSTALL_DIR/start_memory.sh")
 echo "  Done."
 
 # CLI tools live in $INSTALL_DIR/bin — no global install
