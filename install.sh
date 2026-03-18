@@ -8,7 +8,7 @@ echo "=== Claude MCP Installer ==="
 echo ""
 
 # Install dir
-read -r -p "Install directory [$DEFAULT_DIR]: " INSTALL_DIR
+read -r -p "Install directory [$DEFAULT_DIR]: " INSTALL_DIR </dev/tty
 INSTALL_DIR="${INSTALL_DIR:-$DEFAULT_DIR}"
 
 # Clone or update
@@ -50,7 +50,7 @@ if [ ! -f .env ]; then
     echo "    TRENDGPT_TOKEN=..."
     echo "    TM_KNOWLEDGE_TOKEN=..."
     echo ""
-    read -r -p "Press Enter when done to continue..."
+    read -r -p "Press Enter when done to continue..." </dev/tty
 else
     echo ".env already exists, skipping."
 fi
