@@ -15,6 +15,8 @@ First run will create memory.db with schema.
 import sqlite3
 import json
 import re
+import gzip
+import shutil
 from pathlib import Path
 from datetime import datetime
 from mcp.server.fastmcp import FastMCP
@@ -442,8 +444,33 @@ def costs_summary() -> str:
     return json.dumps([dict(r) for r in rows], indent=2)
 
 
+# ============ BACKUP ============
+
+def backup_db(keep: int = 3):
+    """Create a compressed backup of memory.db, keeping last `keep` copies."""
+    if not DB_PATH.exists():
+        return
+
+    backup_dir = DB_PATH.parent / "backups"
+    backup_dir.mkdir(exist_ok=True)
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    backup_path = backup_dir / f"memory_{timestamp}.db.gz"
+
+    with DB_PATH.open("rb") as src, gzip.open(backup_path, "wb", compresslevel=6) as dst:
+        shutil.copyfileobj(src, dst)
+
+    # Rotate: keep only the last `keep` backups
+    backups = sorted(backup_dir.glob("memory_*.db.gz"))
+    for old in backups[:-keep]:
+        old.unlink()
+
+    print(f"Backup created: {backup_path.name} ({backup_path.stat().st_size} bytes)")
+
+
 # ============ RUN ============
 
 if __name__ == "__main__":
     print(f"Memory DB: {DB_PATH}")
+    backup_db(keep=3)
     mcp.run()
