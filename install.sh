@@ -7,9 +7,9 @@ DEFAULT_DIR="$(pwd)/.claude-mcp"
 echo "=== Claude MCP Installer ==="
 echo ""
 
-# Install dir
-read -r -p "Install directory [$DEFAULT_DIR]: " INSTALL_DIR </dev/tty
-INSTALL_DIR="${INSTALL_DIR:-$DEFAULT_DIR}"
+# Install dir (override with CLAUGEL_DIR env var if needed)
+INSTALL_DIR="${CLAUGEL_DIR:-$DEFAULT_DIR}"
+echo "Install directory: $INSTALL_DIR"
 
 # Clone or update
 if [ -d "$INSTALL_DIR/.git" ]; then
@@ -50,7 +50,7 @@ if [ ! -f .env ]; then
     echo "    TRENDGPT_TOKEN=..."
     echo "    TM_KNOWLEDGE_TOKEN=..."
     echo ""
-    read -r -p "Press Enter when done to continue..." </dev/tty
+    read -r -p "Press Enter when done to continue..." </dev/tty 2>/dev/null || true
 else
     echo ".env already exists, skipping."
 fi

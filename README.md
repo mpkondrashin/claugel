@@ -27,6 +27,12 @@ Run from the directory where you want to install claugel:
 curl -fsSL https://raw.githubusercontent.com/mpkondrashin/claugel/main/install.sh | bash
 ```
 
+By default, claugel is installed into `.claude-mcp/` inside the current directory. To use a different path, set `CLAUGEL_DIR` before running:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/mpkondrashin/claugel/main/install.sh | CLAUGEL_DIR=~/my-mcp bash
+```
+
 The installer will:
 
 1. Clone the repo into `.claude-mcp/` inside the current directory
