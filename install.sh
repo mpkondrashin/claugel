@@ -2,7 +2,7 @@
 set -e
 
 REPO="https://github.com/mpkondrashin/claugel.git"
-DEFAULT_DIR="$HOME/.claude-mcp"
+DEFAULT_DIR="$(pwd)/.claude-mcp"
 
 echo "=== Claude MCP Installer ==="
 echo ""
