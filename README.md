@@ -32,7 +32,9 @@ The installer will:
 1. Clone the repo into `.claude-mcp/` inside the current directory
 2. Create a Python virtual environment and install dependencies
 3. Create `.env` from the template and prompt you to fill in API tokens
-4. Register both MCP servers in Claude Code (`claude mcp add --scope user`)
+4. Register both MCP servers for the current project (`claude mcp add --scope project`)
+
+Everything stays inside `.claude-mcp/` — nothing is written outside the installation directory.
 
 Restart Claude Code after installation.
 
@@ -411,7 +413,7 @@ Generate a complete, self-contained HTML page following TrendAI™ brand guideli
 
 ## CLI tools
 
-Standalone command-line utilities installed to `~/.local/bin` by the installer.
+Standalone command-line utilities located in `.claude-mcp/bin/`. The installer does not copy them anywhere — they stay inside the installation directory.
 
 ---
 
@@ -420,8 +422,13 @@ Standalone command-line utilities installed to `~/.local/bin` by the installer.
 Open a Markdown file in the browser with GitHub-style formatting and syntax highlighting. No dependencies beyond Python 3 and an internet connection (loads marked.js and highlight.js from CDN).
 
 ```bash
-mdpreview README.md
-mdpreview /path/to/any/file.md
+.claude-mcp/bin/mdpreview README.md
+```
+
+To call it without the path, add `.claude-mcp/bin` to your shell profile:
+
+```bash
+export PATH="$PWD/.claude-mcp/bin:$PATH"
 ```
 
 The rendered page matches GitHub's Markdown style, with full GFM support (tables, fenced code blocks, task lists) and automatic syntax highlighting for code blocks.
