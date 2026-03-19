@@ -129,6 +129,43 @@ def init_db():
         )
     """)
 
+    # Links / bookmarks registry
+    db.execute("""
+        CREATE TABLE IF NOT EXISTS links (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            url TEXT NOT NULL,
+            title TEXT NOT NULL,
+            description TEXT NOT NULL,
+            tags TEXT DEFAULT '',
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+    # Full-text search for links (title + description)
+    db.execute("""
+        CREATE VIRTUAL TABLE IF NOT EXISTS links_fts
+        USING fts5(title, description, content=links, content_rowid=id)
+    """)
+
+    db.execute("""
+        CREATE TRIGGER IF NOT EXISTS links_ai AFTER INSERT ON links BEGIN
+            INSERT INTO links_fts(rowid, title, description) VALUES (new.id, new.title, new.description);
+        END
+    """)
+
+    db.execute("""
+        CREATE TRIGGER IF NOT EXISTS links_ad AFTER DELETE ON links BEGIN
+            INSERT INTO links_fts(links_fts, rowid, title, description) VALUES('delete', old.id, old.title, old.description);
+        END
+    """)
+
+    db.execute("""
+        CREATE TRIGGER IF NOT EXISTS links_au AFTER UPDATE ON links BEGIN
+            INSERT INTO links_fts(links_fts, rowid, title, description) VALUES('delete', old.id, old.title, old.description);
+            INSERT INTO links_fts(rowid, title, description) VALUES (new.id, new.title, new.description);
+        END
+    """)
+
     # Full-text search for memory
     db.execute("""
         CREATE VIRTUAL TABLE IF NOT EXISTS memory_fts
@@ -442,6 +479,90 @@ def costs_summary() -> str:
     """).fetchall()
     db.close()
     return json.dumps([dict(r) for r in rows], indent=2)
+
+
+# ============ LINKS ============
+
+@mcp.tool()
+def link_add(url: str, title: str, description: str, tags: str = "") -> str:
+    """
+    Add a URL to the links registry.
+
+    Args:
+        url: The URL
+        title: Short human-readable title
+        description: Rich description — what the resource contains, when to use it,
+                     what tasks it helps with. The more detail, the better Claude
+                     can suggest it in relevant contexts.
+        tags: Comma-separated tags (e.g. "api,vision-one,auth")
+    """
+    db = get_db()
+    cur = db.execute(
+        "INSERT INTO links (url, title, description, tags) VALUES (?, ?, ?, ?)",
+        (url, title, description, tags)
+    )
+    db.commit()
+    db.close()
+    return json.dumps({"id": cur.lastrowid, "status": "added"})
+
+
+@mcp.tool()
+def link_search(query: str, limit: int = 10) -> str:
+    """
+    Search links by full-text query across title and description.
+
+    Args:
+        query: Search terms (e.g. "sandbox file upload", "auth token", "webhook")
+        limit: Max results to return
+    """
+    db = get_db()
+    rows = db.execute("""
+        SELECT l.id, l.url, l.title, l.description, l.tags
+        FROM links_fts f
+        JOIN links l ON l.id = f.rowid
+        WHERE links_fts MATCH ?
+        ORDER BY rank
+        LIMIT ?
+    """, (query, limit)).fetchall()
+    db.close()
+    return json.dumps([dict(r) for r in rows], indent=2)
+
+
+@mcp.tool()
+def link_list(tag: str = "") -> str:
+    """
+    List all links, optionally filtered by tag.
+
+    Args:
+        tag: Filter by tag (e.g. "api"). Empty string returns all links.
+    """
+    db = get_db()
+    if tag:
+        rows = db.execute(
+            "SELECT id, url, title, tags FROM links WHERE ',' || tags || ',' LIKE ? ORDER BY title",
+            (f"%,{tag},%",)
+        ).fetchall()
+    else:
+        rows = db.execute(
+            "SELECT id, url, title, tags FROM links ORDER BY title"
+        ).fetchall()
+    db.close()
+    return json.dumps([dict(r) for r in rows], indent=2)
+
+
+@mcp.tool()
+def link_delete(link_id: int) -> str:
+    """
+    Delete a link by its ID.
+
+    Args:
+        link_id: The link ID (from link_list or link_search)
+    """
+    db = get_db()
+    db.execute("DELETE FROM links WHERE id = ?", (link_id,))
+    db.commit()
+    db.close()
+    return json.dumps({"status": "deleted", "id": link_id})
 
 
 # ============ BACKUP ============

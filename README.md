@@ -251,6 +251,58 @@ costs_summary()
 
 ---
 
+##### `link_add`
+
+Add a URL to the links registry. The `description` field is the most important — the richer and more detailed it is, the better Claude can suggest the link when working on a relevant task. Claude performs full-text search across title and description to surface links proactively.
+
+```
+link_add(
+    url="https://automation.trendmicro.com/xdr/api-v3",
+    title="Vision One API v3 Reference",
+    description="Official REST API reference for Vision One (XDR). Covers all
+    endpoints: alerts, workbench, sandbox submission, response actions, SIEM
+    connectors. Use when writing scripts to automate alert triage, isolate
+    endpoints, fetch detections, or integrate with SIEM.",
+    tags="api,vision-one,xdr"
+)
+```
+
+---
+
+##### `link_search`
+
+Full-text search across link titles and descriptions. Use natural language — the query matches against the rich description text.
+
+```
+link_search("sandbox file upload python")
+link_search("how to authenticate Vision One API")
+link_search("webhook alert notification", limit=5)
+```
+
+---
+
+##### `link_list`
+
+List all links, optionally filtered by tag.
+
+```
+link_list()
+link_list(tag="api")
+link_list(tag="vision-one")
+```
+
+---
+
+##### `link_delete`
+
+Delete a link by its ID (from `link_list` or `link_search`).
+
+```
+link_delete(3)
+```
+
+---
+
 ##### `db_info`
 
 Show database tables with row counts and file size.
@@ -273,7 +325,7 @@ stats()
 
 #### Memory schema
 
-The database contains these tables: `memory`, `entities`, `decisions`, `questions`, `projects`, `people`, `ai_costs`. Full-text search is enabled on the `memory` table via SQLite FTS5.
+The database contains these tables: `memory`, `entities`, `decisions`, `questions`, `projects`, `people`, `ai_costs`, `links`. Full-text search is enabled on `memory` (content) and `links` (title + description) via SQLite FTS5.
 
 ---
 
